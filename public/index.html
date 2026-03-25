@@ -1,0 +1,921 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Alma Animal — Agente de Contenido</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --bg-primary:#ffffff;--bg-secondary:#f5f4f1;--bg-tertiary:#eeedea;
+  --bg-info:#e6f1fb;--bg-success:#eaf3de;--bg-warning:#faeeda;--bg-danger:#fcebeb;
+  --text-primary:#1a1a18;--text-secondary:#6b6a66;--text-tertiary:#9e9d99;
+  --text-info:#185fa5;--text-success:#3b6d11;--text-warning:#854f0b;--text-danger:#a32d2d;
+  --border-light:rgba(0,0,0,0.1);--border-mid:rgba(0,0,0,0.18);--border-strong:rgba(0,0,0,0.28);
+  --border-info:rgba(24,95,165,0.3);--border-success:rgba(59,109,17,0.3);
+  --radius-md:8px;--radius-lg:12px;--font-ui:system-ui,-apple-system,sans-serif;
+}
+@media(prefers-color-scheme:dark){:root{
+  --bg-primary:#1c1c1a;--bg-secondary:#252522;--bg-tertiary:#2e2e2b;
+  --bg-info:#0c2a47;--bg-success:#17300a;--bg-warning:#3a2205;--bg-danger:#3a1010;
+  --text-primary:#f0efe9;--text-secondary:#a09f9b;--text-tertiary:#6b6a66;
+  --text-info:#85b7eb;--text-success:#97c459;--text-warning:#ef9f27;--text-danger:#f09595;
+  --border-light:rgba(255,255,255,0.08);--border-mid:rgba(255,255,255,0.14);--border-strong:rgba(255,255,255,0.22);
+}}
+body{font-family:var(--font-ui);background:var(--bg-secondary);color:var(--text-primary);min-height:100vh;}
+.app{max-width:860px;margin:0 auto;padding:2rem 1rem;}
+.header{display:flex;align-items:center;gap:14px;margin-bottom:2rem;padding-bottom:1.25rem;border-bottom:0.5px solid var(--border-light);}
+.logo-circle{width:48px;height:48px;border-radius:50%;background:var(--bg-info);display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;overflow:hidden;}
+.logo-circle img{width:100%;height:100%;object-fit:cover;}
+.header-text h1{font-size:17px;font-weight:500;}
+.header-text p{font-size:12px;color:var(--text-secondary);margin-top:2px;}
+.tabs{display:flex;gap:2px;margin-bottom:1.5rem;border-bottom:0.5px solid var(--border-light);overflow-x:auto;}
+.tab{padding:8px 14px;font-size:13px;cursor:pointer;border:none;background:transparent;color:var(--text-secondary);border-bottom:2px solid transparent;margin-bottom:-0.5px;transition:all 0.15s;font-family:var(--font-ui);white-space:nowrap;}
+.tab.active{color:var(--text-primary);border-bottom-color:var(--text-primary);font-weight:500;}
+.tab:hover{color:var(--text-primary);}
+.panel{display:none;}.panel.active{display:block;}
+.section-label{font-size:11px;font-weight:500;color:var(--text-tertiary);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:8px;}
+.card{background:var(--bg-primary);border:0.5px solid var(--border-light);border-radius:var(--radius-lg);padding:1.25rem;margin-bottom:1rem;}
+.format-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:1.25rem;}
+.format-btn{padding:12px 8px;border:0.5px solid var(--border-light);border-radius:var(--radius-md);background:var(--bg-primary);cursor:pointer;text-align:center;transition:all 0.15s;font-family:var(--font-ui);}
+.format-btn:hover{border-color:var(--border-strong);}
+.format-btn.selected{background:var(--bg-info);border-color:var(--border-info);}
+.format-btn .fmt-icon{font-size:20px;display:block;margin-bottom:5px;}
+.format-btn .fmt-label{font-size:13px;font-weight:500;color:var(--text-primary);display:block;}
+.format-btn .fmt-sub{font-size:11px;color:var(--text-tertiary);display:block;margin-top:2px;}
+.tone-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-bottom:1.25rem;}
+.tone-btn{padding:10px 12px;border:0.5px solid var(--border-light);border-radius:var(--radius-md);background:var(--bg-primary);cursor:pointer;font-size:13px;transition:all 0.15s;text-align:left;font-family:var(--font-ui);}
+.tone-btn:hover{border-color:var(--border-strong);}
+.tone-btn.selected{background:var(--bg-success);border-color:var(--border-success);}
+.tone-btn strong{display:block;font-size:13px;font-weight:500;margin-bottom:2px;}
+.tone-btn span{color:var(--text-secondary);font-size:11px;}
+.platform-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:1.25rem;}
+.plat-btn{padding:9px 6px;border:0.5px solid var(--border-light);border-radius:var(--radius-md);background:var(--bg-primary);cursor:pointer;text-align:center;font-size:12px;transition:all 0.15s;font-family:var(--font-ui);color:var(--text-primary);}
+.plat-btn:hover{border-color:var(--border-strong);}
+.plat-btn.selected{background:var(--bg-warning);border-color:rgba(133,79,11,0.3);}
+.topic-input{width:100%;padding:10px 12px;font-size:14px;border:0.5px solid var(--border-light);border-radius:var(--radius-md);background:var(--bg-primary);color:var(--text-primary);font-family:var(--font-ui);resize:vertical;min-height:80px;margin-bottom:0.75rem;}
+.topic-input:focus{outline:none;border-color:var(--border-strong);}
+.text-input{width:100%;padding:9px 12px;font-size:14px;border:0.5px solid var(--border-light);border-radius:var(--radius-md);background:var(--bg-primary);color:var(--text-primary);font-family:var(--font-ui);}
+.text-input:focus{outline:none;border-color:var(--border-strong);}
+.generate-btn{width:100%;padding:12px;background:var(--text-primary);color:var(--bg-primary);border:none;border-radius:var(--radius-md);font-size:14px;font-weight:500;cursor:pointer;transition:opacity 0.15s;font-family:var(--font-ui);}
+.generate-btn:hover{opacity:0.85;}.generate-btn:disabled{opacity:0.4;cursor:not-allowed;}
+.action-btn{padding:8px 14px;border:0.5px solid var(--border-mid);border-radius:var(--radius-md);background:transparent;cursor:pointer;font-size:13px;color:var(--text-secondary);transition:all 0.15s;font-family:var(--font-ui);white-space:nowrap;}
+.action-btn:hover{background:var(--bg-secondary);color:var(--text-primary);}
+.action-btn.info{border-color:var(--border-info);background:var(--bg-info);color:var(--text-info);}
+.action-btn.success{border-color:var(--border-success);background:var(--bg-success);color:var(--text-success);}
+.action-btn.primary{background:var(--text-primary);color:var(--bg-primary);border-color:transparent;}
+.result-box{background:var(--bg-secondary);border:0.5px solid var(--border-light);border-radius:var(--radius-lg);padding:1.25rem;margin-top:1rem;}
+.spinner{width:16px;height:16px;border:2px solid var(--border-mid);border-top-color:var(--text-primary);border-radius:50%;animation:spin 0.7s linear infinite;flex-shrink:0;}
+@keyframes spin{to{transform:rotate(360deg);}}
+.loading-row{display:flex;align-items:center;gap:10px;color:var(--text-secondary);font-size:14px;padding:0.75rem 0;}
+.loading-dots{display:flex;gap:5px;align-items:center;}
+.loading-dots span{width:7px;height:7px;background:var(--text-tertiary);border-radius:50%;animation:dotpulse 1.2s ease-in-out infinite;}
+.loading-dots span:nth-child(2){animation-delay:0.2s;}
+.loading-dots span:nth-child(3){animation-delay:0.4s;}
+@keyframes dotpulse{0%,80%,100%{transform:scale(0.6);opacity:0.4;}40%{transform:scale(1);opacity:1;}}
+.loading-steps{font-size:13px;color:var(--text-secondary);margin-left:4px;animation:fadeStep 0.4s ease;}
+@keyframes fadeStep{from{opacity:0;transform:translateY(4px);}to{opacity:1;transform:translateY(0);}}
+.repo-filter{padding:6px 14px;border:0.5px solid var(--border-light);border-radius:99px;background:transparent;cursor:pointer;font-size:12px;color:var(--text-secondary);font-family:var(--font-ui);transition:all 0.15s;}
+.repo-filter:hover{border-color:var(--border-strong);color:var(--text-primary);}
+.repo-filter.active{background:var(--text-primary);color:var(--bg-primary);border-color:transparent;}
+.repo-folder{margin-bottom:1.5rem;}
+.repo-folder-header{display:flex;align-items:center;gap:8px;margin-bottom:10px;padding-bottom:8px;border-bottom:0.5px solid var(--border-light);}
+.repo-folder-icon{font-size:16px;}
+.repo-folder-name{font-size:13px;font-weight:500;}
+.repo-folder-count{font-size:11px;color:var(--text-tertiary);margin-left:auto;}
+.repo-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px;}
+.repo-card{border:0.5px solid var(--border-light);border-radius:var(--radius-md);padding:12px;background:var(--bg-primary);cursor:pointer;transition:all 0.15s;}
+.repo-card:hover{border-color:var(--border-strong);background:var(--bg-secondary);}
+.repo-card-type{font-size:10px;font-weight:500;text-transform:uppercase;letter-spacing:0.06em;color:var(--text-tertiary);margin-bottom:5px;display:flex;align-items:center;gap:5px;}
+.repo-card-title{font-size:13px;font-weight:500;margin-bottom:5px;line-height:1.4;}
+.repo-card-meta{font-size:11px;color:var(--text-secondary);line-height:1.5;}
+.repo-card-date{font-size:10px;color:var(--text-tertiary);margin-top:8px;padding-top:6px;border-top:0.5px solid var(--border-light);}
+.repo-modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.45);display:flex;align-items:center;justify-content:center;z-index:100;padding:1rem;}
+.repo-modal{background:var(--bg-primary);border-radius:var(--radius-lg);padding:1.5rem;max-width:600px;width:100%;max-height:80vh;overflow-y:auto;position:relative;}
+.repo-modal-close{position:absolute;top:12px;right:12px;background:transparent;border:none;font-size:18px;cursor:pointer;color:var(--text-secondary);padding:4px 8px;border-radius:var(--radius-md);}
+.repo-modal-close:hover{background:var(--bg-secondary);}
+.result-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;flex-wrap:wrap;gap:8px;}
+.result-tag{font-size:11px;font-weight:500;padding:3px 9px;border-radius:var(--radius-md);background:var(--bg-info);color:var(--text-info);}
+.copy-btn{padding:5px 10px;font-size:12px;border:0.5px solid var(--border-mid);border-radius:var(--radius-md);background:transparent;cursor:pointer;color:var(--text-secondary);font-family:var(--font-ui);}
+.copy-btn:hover{background:var(--bg-tertiary);}
+.result-section{margin-bottom:14px;}
+.result-section h3{font-size:10px;font-weight:500;color:var(--text-tertiary);text-transform:uppercase;letter-spacing:0.07em;margin-bottom:5px;}
+.result-section p{font-size:14px;line-height:1.7;color:var(--text-primary);}
+.hashtag-row{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px;}
+.hashtag{font-size:12px;padding:3px 8px;background:var(--bg-info);color:var(--text-info);border-radius:var(--radius-md);}
+.export-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px;padding-top:12px;border-top:0.5px solid var(--border-light);}
+.suggest-btn{padding:8px 14px;border:0.5px solid var(--border-mid);border-radius:var(--radius-md);background:transparent;cursor:pointer;font-size:13px;color:var(--text-secondary);transition:all 0.15s;font-family:var(--font-ui);}
+.suggest-btn:hover{background:var(--bg-secondary);color:var(--text-primary);}
+.ideas-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+.idea-card{border:0.5px solid var(--border-light);border-radius:var(--radius-md);padding:12px;cursor:pointer;transition:all 0.15s;background:var(--bg-primary);}
+.idea-card:hover{border-color:var(--border-strong);background:var(--bg-secondary);}
+.idea-card .idea-type{font-size:10px;font-weight:500;text-transform:uppercase;letter-spacing:0.06em;color:var(--text-tertiary);margin-bottom:4px;}
+.idea-card .idea-title{font-size:13px;font-weight:500;margin-bottom:4px;}
+.idea-card .idea-desc{font-size:12px;color:var(--text-secondary);line-height:1.5;}
+.calendar-grid{display:grid;gap:10px;}
+.cal-week{border:0.5px solid var(--border-light);border-radius:var(--radius-md);overflow:hidden;}
+.cal-week-header{padding:9px 14px;background:var(--bg-secondary);font-size:12px;font-weight:500;color:var(--text-secondary);}
+.cal-posts{padding:8px;display:flex;flex-direction:column;gap:6px;}
+.cal-post{display:flex;align-items:flex-start;gap:10px;padding:9px 10px;border-radius:var(--radius-md);background:var(--bg-primary);}
+.cal-day{font-size:11px;font-weight:500;color:var(--text-tertiary);min-width:32px;}
+.cal-time{font-size:11px;color:var(--text-tertiary);min-width:44px;}
+.cal-info{flex:1;}
+.cal-info .cal-title{font-size:13px;font-weight:500;}
+.cal-info .cal-meta{font-size:11px;color:var(--text-secondary);margin-top:3px;display:flex;gap:6px;align-items:center;flex-wrap:wrap;}
+.platform-badge{font-size:10px;padding:2px 6px;border-radius:var(--radius-md);font-weight:500;}
+.pb-ig{background:#fce4ec;color:#880e4f;}.pb-tt{background:#e8eaf6;color:#1a237e;}
+.pb-fb{background:#e3f2fd;color:#0d47a1;}.pb-wa{background:#e8f5e9;color:#1b5e20;}
+.upload-zone{border:1px dashed var(--border-mid);border-radius:var(--radius-lg);padding:2rem;text-align:center;cursor:pointer;transition:all 0.15s;margin-bottom:1rem;}
+.upload-zone:hover{border-color:var(--border-strong);background:var(--bg-secondary);}
+.upload-zone .upload-icon{font-size:28px;display:block;margin-bottom:8px;}
+.upload-zone p{font-size:14px;color:var(--text-secondary);}
+.upload-zone small{font-size:12px;color:var(--text-tertiary);margin-top:4px;display:block;}
+.assets-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(72px,1fr));gap:8px;margin-bottom:1rem;}
+.asset-thumb{width:100%;aspect-ratio:1;border-radius:var(--radius-md);object-fit:cover;border:0.5px solid var(--border-light);}
+.web-search-btn{padding:0 16px;height:40px;border:0.5px solid var(--border-info);border-radius:var(--radius-md);background:var(--bg-info);color:var(--text-info);font-size:13px;font-weight:500;cursor:pointer;white-space:nowrap;font-family:var(--font-ui);transition:opacity 0.15s;}
+.web-search-btn:hover{opacity:0.8;}.web-search-btn:disabled{opacity:0.4;cursor:not-allowed;}
+.web-result-card{border:0.5px solid var(--border-light);border-radius:var(--radius-md);padding:12px 14px;background:var(--bg-primary);margin-bottom:8px;}
+.web-result-card .wrc-source{font-size:11px;color:var(--text-tertiary);margin-bottom:4px;}
+.web-result-card .wrc-title{font-size:14px;font-weight:500;margin-bottom:4px;}
+.web-result-card .wrc-snippet{font-size:13px;color:var(--text-secondary);line-height:1.6;margin-bottom:8px;}
+.web-result-card .wrc-use-btn{font-size:12px;padding:4px 10px;border:0.5px solid var(--border-mid);border-radius:var(--radius-md);background:transparent;cursor:pointer;color:var(--text-secondary);font-family:var(--font-ui);}
+.web-section-label{font-size:11px;font-weight:500;color:var(--text-tertiary);text-transform:uppercase;letter-spacing:0.06em;margin:1rem 0 8px;}
+.nl-struct-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:1rem;}
+.nl-struct-btn{padding:12px 8px;border:0.5px solid var(--border-light);border-radius:var(--radius-md);background:var(--bg-primary);cursor:pointer;text-align:center;transition:all 0.15s;font-family:var(--font-ui);}
+.nl-struct-btn:hover{border-color:var(--border-strong);}
+.nl-struct-btn.selected{background:var(--bg-warning);border-color:rgba(133,79,11,0.3);}
+.nl-struct-btn span{font-size:13px;font-weight:500;display:block;margin-bottom:3px;color:var(--text-primary);}
+.nl-struct-btn small{font-size:11px;color:var(--text-tertiary);}
+.nl-preview{background:var(--bg-primary);border:0.5px solid var(--border-light);border-radius:var(--radius-lg);overflow:hidden;margin-top:1rem;}
+.nl-preview-header{padding:10px 14px;background:var(--bg-secondary);font-size:12px;font-weight:500;color:var(--text-secondary);display:flex;justify-content:space-between;align-items:center;}
+.nl-preview-body{padding:1.25rem;font-size:13px;line-height:1.7;color:var(--text-primary);}
+.vet-table{width:100%;border-collapse:collapse;font-size:13px;}
+.vet-table th{text-align:left;padding:8px 10px;font-size:11px;font-weight:500;color:var(--text-tertiary);text-transform:uppercase;letter-spacing:0.05em;border-bottom:0.5px solid var(--border-light);}
+.vet-table td{padding:8px 10px;border-bottom:0.5px solid var(--border-light);}
+.vet-table tr:last-child td{border-bottom:none;}
+.del-btn{padding:3px 8px;font-size:11px;border:0.5px solid var(--border-mid);border-radius:var(--radius-md);background:transparent;cursor:pointer;color:var(--text-danger);font-family:var(--font-ui);}
+.send-progress{background:var(--bg-secondary);border:0.5px solid var(--border-light);border-radius:var(--radius-lg);padding:1.25rem;margin-top:1rem;}
+.progress-bar-track{background:var(--border-light);border-radius:99px;height:6px;margin:10px 0;}
+.progress-bar-fill{background:var(--text-success);height:6px;border-radius:99px;transition:width 0.3s;}
+.send-log{max-height:160px;overflow-y:auto;font-size:12px;color:var(--text-secondary);margin-top:8px;}
+.send-log div{padding:3px 0;border-bottom:0.5px solid var(--border-light);}
+.send-log div.ok{color:var(--text-success);}
+@media(max-width:540px){
+  .format-grid,.nl-struct-grid{grid-template-columns:1fr 1fr;}
+  .tone-grid,.platform-grid{grid-template-columns:1fr 1fr;}
+  .ideas-grid{grid-template-columns:1fr;}
+}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="header">
+    <div class="logo-circle" id="logoDisplay">🐾</div>
+    <div class="header-text">
+      <h1>Crematorio Alma Animal</h1>
+      <p>Agente de contenido · redes sociales & newsletter</p>
+    </div>
+  </div>
+
+  <div class="tabs">
+    <button class="tab active" onclick="switchTab('generar',this)">Generar contenido</button>
+    <button class="tab" onclick="switchTab('ideas',this)">Ideas & temas</button>
+    <button class="tab" onclick="switchTab('calendario',this)">Plan semanal</button>
+    <button class="tab" onclick="switchTab('newsletter',this)">Newsletter</button>
+    <button class="tab" onclick="switchTab('veterinarios',this)">Veterinarios</button>
+    <button class="tab" onclick="switchTab('repositorio',this)">Repositorio</button>
+    <button class="tab" onclick="switchTab('activos',this)">Activos</button>
+  </div>
+
+  <!-- GENERAR -->
+  <div class="panel active" id="panel-generar">
+    <div class="card">
+      <div class="section-label">Formato</div>
+      <div class="format-grid">
+        <button class="format-btn selected" onclick="selectFormat(this,'reel')" data-val="reel">
+          <span class="fmt-icon">🎬</span><span class="fmt-label">Reel</span><span class="fmt-sub">9:16 · 30–60s</span>
+        </button>
+        <button class="format-btn" onclick="selectFormat(this,'historia')" data-val="historia">
+          <span class="fmt-icon">📱</span><span class="fmt-label">Historia</span><span class="fmt-sub">9:16 · 15s</span>
+        </button>
+        <button class="format-btn" onclick="selectFormat(this,'post')" data-val="post">
+          <span class="fmt-icon">🖼</span><span class="fmt-label">Post</span><span class="fmt-sub">1:1 · estático</span>
+        </button>
+      </div>
+      <div class="section-label">Tono</div>
+      <div class="tone-grid">
+        <button class="tone-btn selected" onclick="selectTone(this,'empático')"><strong>Empático</strong><span>Acompañamiento en el duelo</span></button>
+        <button class="tone-btn" onclick="selectTone(this,'informativo')"><strong>Informativo</strong><span>Proceso, servicios, FAQ</span></button>
+        <button class="tone-btn" onclick="selectTone(this,'celebratorio')"><strong>Celebratorio</strong><span>Homenajes, recuerdos, vida</span></button>
+        <button class="tone-btn" onclick="selectTone(this,'educativo')"><strong>Educativo</strong><span>Duelo animal, vínculo, cuidado</span></button>
+      </div>
+      <div class="section-label">Plataformas</div>
+      <div class="platform-grid">
+        <button class="plat-btn selected" onclick="togglePlat(this,'instagram')">Instagram</button>
+        <button class="plat-btn selected" onclick="togglePlat(this,'tiktok')">TikTok</button>
+        <button class="plat-btn selected" onclick="togglePlat(this,'facebook')">Facebook</button>
+        <button class="plat-btn selected" onclick="togglePlat(this,'whatsapp')">WhatsApp</button>
+      </div>
+      <div class="section-label">Tema o idea (opcional)</div>
+      <textarea class="topic-input" id="topicInput" placeholder="Ej: el proceso de cremación individual, duelo por la pérdida de un perro, homenaje con huellita..."></textarea>
+      <button class="generate-btn" id="genBtn" onclick="generateContent()">Generar contenido →</button>
+    </div>
+    <div id="resultContainer"></div>
+  </div>
+
+  <!-- IDEAS -->
+  <div class="panel" id="panel-ideas">
+    <div class="card">
+      <div class="section-label" style="margin-bottom:10px;">Escribe tu propio tema</div>
+      <div style="display:flex;gap:8px;margin-bottom:1.25rem;flex-wrap:wrap;">
+        <input type="text" id="customTopicInput" class="text-input" style="flex:1;min-width:160px;" placeholder="Ej: ansiedad por separación, rituales de despedida...">
+        <button class="action-btn" onclick="fetchIdeasCustom()">Generar ideas →</button>
+        <button class="web-search-btn" onclick="webSearchTopic()">Buscar en la web →</button>
+      </div>
+      <div class="section-label" style="margin-bottom:10px;">O elige un tema sugerido</div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:1.25rem;">
+        <button class="suggest-btn" onclick="fetchIdeas('duelo mascotas')">Duelo por mascotas</button>
+        <button class="suggest-btn" onclick="fetchIdeas('cremación mascotas')">Cremación</button>
+        <button class="suggest-btn" onclick="fetchIdeas('vínculo humano animal')">Vínculo humano-animal</button>
+        <button class="suggest-btn" onclick="fetchIdeas('recuerdos mascotas homenaje')">Recuerdos & homenajes</button>
+        <button class="suggest-btn" onclick="fetchIdeas('tendencias contenido mascotas redes sociales')">Tendencias actuales</button>
+      </div>
+      <div id="ideasContainer"><p style="font-size:14px;color:var(--text-secondary);">Escribe un tema propio o selecciona uno sugerido para generar ideas.</p></div>
+    </div>
+  </div>
+
+  <!-- CALENDARIO -->
+  <div class="panel" id="panel-calendario">
+    <div class="card">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:1rem;flex-wrap:wrap;gap:8px;">
+        <div class="section-label" style="margin:0;">Plan de contenido — 2 semanas</div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;">
+          <button class="action-btn" onclick="generateCalendar()">Generar plan →</button>
+          <button class="action-btn info" onclick="exportToBuffer()">Exportar para Buffer →</button>
+          <button class="action-btn success" onclick="exportToMeta()">Copiar para Meta Business →</button>
+          <button class="action-btn primary" onclick="printPlanPDF()">Imprimir plan PDF →</button>
+        </div>
+      </div>
+      <div id="calendarContainer"><p style="font-size:14px;color:var(--text-secondary);">Genera el plan y luego expórtalo o descárgalo como PDF con toda la información.</p></div>
+    </div>
+  </div>
+
+  <!-- NEWSLETTER -->
+  <div class="panel" id="panel-newsletter">
+    <div class="card">
+      <div class="section-label">Estructura del newsletter</div>
+      <div class="nl-struct-grid">
+        <button class="nl-struct-btn selected" onclick="selectNlStruct(this,'informativo')"><span>Informativo</span><small>Artículo + tips + novedades</small></button>
+        <button class="nl-struct-btn" onclick="selectNlStruct(this,'emotivo')"><span>Emotivo</span><small>Historia + reflexión + recursos</small></button>
+        <button class="nl-struct-btn" onclick="selectNlStruct(this,'educativo')"><span>Educativo</span><small>Guía + datos + CTA profesional</small></button>
+      </div>
+      <div class="section-label">Tema principal</div>
+      <input type="text" class="text-input" id="nlTopic" style="margin-bottom:1rem;" placeholder="Ej: manejo del duelo en clínicas veterinarias, protocolos de cremación...">
+      <div class="section-label" style="margin-bottom:8px;">Destinatario</div>
+      <div style="display:flex;gap:8px;margin-bottom:1rem;flex-wrap:wrap;">
+        <button class="suggest-btn" id="destVet" onclick="selectDest('veterinarios')" style="background:var(--bg-warning);">Veterinarios</button>
+        <button class="suggest-btn" id="destPet" onclick="selectDest('dueños de mascotas')">Dueños de mascotas</button>
+        <button class="suggest-btn" id="destGen" onclick="selectDest('comunidad general')">Comunidad general</button>
+      </div>
+      <button class="generate-btn" onclick="generateNewsletter()">Generar newsletter →</button>
+    </div>
+    <div id="nlContainer"></div>
+  </div>
+
+  <!-- VETERINARIOS -->
+  <div class="panel" id="panel-veterinarios">
+    <div class="card">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;flex-wrap:wrap;gap:8px;">
+        <div class="section-label" style="margin:0;">Base de veterinarios</div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;">
+          <button class="action-btn" onclick="document.getElementById('vetExcelInput').click()">Importar Excel/CSV →</button>
+          <button class="action-btn" onclick="showAddVetForm()">+ Agregar manualmente</button>
+        </div>
+      </div>
+      <input type="file" id="vetExcelInput" accept=".csv,.xlsx,.xls" style="display:none;" onchange="importVetList(event)">
+      <div id="addVetForm" style="display:none;background:var(--bg-secondary);border-radius:var(--radius-md);padding:12px;margin-bottom:1rem;">
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr auto;gap:8px;align-items:end;">
+          <div><div class="section-label">Nombre</div><input type="text" class="text-input" id="vetName" placeholder="Dra. María López"></div>
+          <div><div class="section-label">Email</div><input type="text" class="text-input" id="vetEmail" placeholder="maria@clinica.cl"></div>
+          <div><div class="section-label">Clínica</div><input type="text" class="text-input" id="vetClinic" placeholder="Clínica VetSur"></div>
+          <button class="action-btn success" onclick="addVet()">Agregar</button>
+        </div>
+      </div>
+      <div id="vetTableContainer"><p style="font-size:14px;color:var(--text-secondary);">Sin veterinarios aún. Importa un CSV o agrega manualmente.</p></div>
+      <div id="vetCount" style="font-size:12px;color:var(--text-tertiary);margin-top:8px;"></div>
+    </div>
+    <div class="card" id="sendNlCard" style="display:none;">
+      <div class="section-label">Enviar newsletter a veterinarios</div>
+      <p style="font-size:13px;color:var(--text-secondary);margin-bottom:1rem;">Se enviará el último newsletter generado, uno por uno vía Gmail.</p>
+      <div style="background:var(--bg-warning);border-radius:var(--radius-md);padding:10px 14px;margin-bottom:1rem;font-size:12px;color:var(--text-warning);">
+        Gmail se abrirá con el correo prellenado para cada destinatario. Tú confirmas cada envío. Esto evita que Gmail lo clasifique como spam.
+      </div>
+      <button class="generate-btn" onclick="startSendCampaign()">Iniciar envío uno por uno →</button>
+      <div id="sendProgressContainer"></div>
+    </div>
+  </div>
+
+  <!-- REPOSITORIO -->
+  <div class="panel" id="panel-repositorio">
+    <div class="card">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;flex-wrap:wrap;gap:8px;">
+        <div class="section-label" style="margin:0;">Repositorio de contenido generado</div>
+        <button class="action-btn" style="color:var(--text-danger);border-color:rgba(163,45,45,0.3);" onclick="clearRepo()">Limpiar todo</button>
+      </div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:1.25rem;" id="repoFilterRow">
+        <button class="repo-filter active" onclick="filterRepo('todos')">Todos</button>
+        <button class="repo-filter" onclick="filterRepo('reel')">Reels</button>
+        <button class="repo-filter" onclick="filterRepo('post')">Posts</button>
+        <button class="repo-filter" onclick="filterRepo('historia')">Historias</button>
+        <button class="repo-filter" onclick="filterRepo('newsletter')">Newsletters</button>
+        <button class="repo-filter" onclick="filterRepo('plan')">Planes semanales</button>
+      </div>
+      <div id="repoContainer"><p style="font-size:14px;color:var(--text-secondary);">Aún no hay contenido guardado. Genera contenido y se guardará automáticamente aquí.</p></div>
+    </div>
+  </div>
+
+  <!-- ACTIVOS -->
+  <div class="panel" id="panel-activos">
+    <div class="card">
+      <div class="section-label">Logo</div>
+      <div class="upload-zone" onclick="document.getElementById('logoInput').click()">
+        <span class="upload-icon">📎</span><p>Sube el logo de Alma Animal</p><small>PNG, JPG o SVG · recomendado fondo transparente</small>
+      </div>
+      <input type="file" id="logoInput" accept="image/*" style="display:none;" onchange="uploadLogo(event)">
+      <div class="section-label">Imágenes de fondo</div>
+      <div class="upload-zone" onclick="document.getElementById('bgInput').click()">
+        <span class="upload-icon">🖼</span><p>Sube fotos de fondo para tus publicaciones</p><small>JPG, PNG · puedes subir varias a la vez</small>
+      </div>
+      <input type="file" id="bgInput" accept="image/*" multiple style="display:none;" onchange="uploadBgs(event)">
+      <div id="assetsPreview" style="display:none;">
+        <div class="section-label">Activos subidos</div>
+        <div class="assets-grid" id="assetsGrid"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── STATE ──────────────────────────────────────────────
+let selectedFormat='reel', selectedTone='empático', selectedPlatforms=['instagram','tiktok','facebook','whatsapp'];
+let selectedNlStruct='informativo', selectedDest='veterinarios';
+let calendarData=[], currentNlHTML='', currentNlText='';
+let vetList=[];
+try{vetList=JSON.parse(localStorage.getItem('alma_vets')||'[]');}catch(e){vetList=[];}
+
+// ── TABS ───────────────────────────────────────────────
+function switchTab(tab,el){
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById('panel-'+tab).classList.add('active');
+  if(tab==='veterinarios')renderVetTable();
+  if(tab==='repositorio')renderRepo();
+}
+
+// ── SELECTORS ──────────────────────────────────────────
+function selectFormat(el,val){document.querySelectorAll('.format-btn').forEach(b=>b.classList.remove('selected'));el.classList.add('selected');selectedFormat=val;}
+function selectTone(el,val){document.querySelectorAll('.tone-btn').forEach(b=>b.classList.remove('selected'));el.classList.add('selected');selectedTone=val;}
+function togglePlat(el,val){el.classList.toggle('selected');selectedPlatforms=selectedPlatforms.includes(val)?selectedPlatforms.filter(p=>p!==val):[...selectedPlatforms,val];}
+function selectNlStruct(el,val){document.querySelectorAll('.nl-struct-btn').forEach(b=>b.classList.remove('selected'));el.classList.add('selected');selectedNlStruct=val;}
+function selectDest(val){
+  selectedDest=val;
+  const map={'veterinarios':'destVet','dueños de mascotas':'destPet','comunidad general':'destGen'};
+  Object.keys(map).forEach(k=>{const e=document.getElementById(map[k]);if(e)e.style.background=k===val?'var(--bg-warning)':'';});
+}
+
+// ── CLAUDE API ─────────────────────────────────────────
+async function callClaude(prompt,useSearch=false){
+  const body={model:'claude-haiku-4-5-20251001',max_tokens:1200,
+    system:'Eres el agente de contenido de "Crematorio Alma Animal", crematorio de mascotas en Chile. Generas contenido auténtico, empático y profesional. Responde siempre en español.',
+    messages:[{role:'user',content:prompt}]};
+  if(useSearch)body.tools=[{type:'web_search_20250305',name:'web_search'}];
+  const res=await fetch('/api/claude',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+  const data=await res.json();
+  return data.content.map(c=>c.text||'').join('');
+}
+
+// ── GENERATE CONTENT ───────────────────────────────────
+async function generateContent(){
+  const topic=document.getElementById('topicInput').value;
+  const btn=document.getElementById('genBtn'); btn.disabled=true; btn.textContent='Generando...';
+  const container=document.getElementById('resultContainer');
+  const steps=['Pensando el tema...','Redactando caption...','Preparando hashtags...','Finalizando contenido...'];
+  let si=0;
+  container.innerHTML=`<div class="result-box"><div class="loading-row"><div class="loading-dots"><span></span><span></span><span></span></div><span class="loading-steps" id="loadStep">${steps[0]}</span></div></div>`;
+  const stepTimer=setInterval(()=>{si=(si+1)%steps.length;const el=document.getElementById('loadStep');if(el)el.textContent=steps[si];},2200);
+  const prompt=`Genera contenido completo para un ${selectedFormat} de Crematorio Alma Animal.
+Tono: ${selectedTone} | Plataformas: ${selectedPlatforms.join(', ')}
+${topic?'Tema: '+topic:'Elige el tema más relevante.'}
+Sé conciso. Formato exacto:
+TÍTULO: [título breve]
+CAPTION: [caption listo para publicar, máx 5 líneas]
+HASHTAGS: [8-12 hashtags separados por espacio]
+${selectedFormat==='reel'?'GUIÓN: [guión en 3-4 escenas breves]':''}
+${selectedFormat==='historia'?'TEXTO_HISTORIA: [texto muy breve, máx 2 líneas]':''}
+HORARIO_OPTIMO: [día y hora por plataforma para Chile, una línea]
+NOTA_DISEÑO: [sugerencia visual en 1 línea]`;
+  try{const text=await callClaude(prompt);clearInterval(stepTimer);renderResult(text);saveToRepo(text,selectedFormat,selectedTone);}
+  catch(e){clearInterval(stepTimer);container.innerHTML='<div class="result-box"><p style="color:var(--text-danger);font-size:14px;">Error al generar.</p></div>';}
+  btn.disabled=false;btn.textContent='Generar contenido →';
+}
+
+function renderResult(text){
+  const get=k=>{const m=text.match(new RegExp(k+':[\\s]*([\\s\\S]*?)(?=\\n[A-ZÁÉÍÓÚ_]+:|$)'));return m?m[1].trim():'';};
+  const titulo=get('TÍTULO'),caption=get('CAPTION'),hashtags=get('HASHTAGS').split(/\s+/).filter(h=>h.startsWith('#'));
+  const guion=get('GUIÓN')||get('TEXTO_HISTORIA'),horario=get('HORARIO_OPTIMO'),nota=get('NOTA_DISEÑO');
+  const capEnc=encodeURIComponent(caption||titulo), hashEnc=encodeURIComponent(hashtags.join(' '));
+  let html=`<div class="result-box"><div class="result-header"><span class="result-tag">${selectedFormat.toUpperCase()} · ${selectedTone}</span><button class="copy-btn" onclick="copyAll()">Copiar todo</button></div>`;
+  if(titulo)html+=`<div class="result-section"><h3>Título</h3><p style="font-weight:500;">${titulo}</p></div>`;
+  if(caption)html+=`<div class="result-section"><h3>Caption</h3><p>${caption.replace(/\n/g,'<br>')}</p></div>`;
+  if(hashtags.length)html+=`<div class="result-section"><h3>Hashtags</h3><div class="hashtag-row">${hashtags.map(h=>`<span class="hashtag">${h}</span>`).join('')}</div></div>`;
+  if(guion)html+=`<div class="result-section"><h3>${selectedFormat==='reel'?'Guión':'Texto historia'}</h3><p>${guion.replace(/\n/g,'<br>')}</p></div>`;
+  if(horario)html+=`<div class="result-section"><h3>Horario óptimo</h3><p>${horario.replace(/\n/g,'<br>')}</p></div>`;
+  if(nota)html+=`<div class="result-section"><h3>Sugerencia visual</h3><p>${nota}</p></div>`;
+  html+=`<div class="export-row">
+    <button class="action-btn info" onclick="exportSingleBuffer('${capEnc}','${hashEnc}')">Exportar a Buffer →</button>
+    <button class="action-btn success" onclick="copyForMeta('${capEnc}','${hashEnc}')">Copiar para Meta Business →</button>
+  </div></div>`;
+  document.getElementById('resultContainer').innerHTML=html;
+  window._lastContent=text;
+}
+
+function copyAll(){if(window._lastContent){navigator.clipboard.writeText(window._lastContent).then(()=>{event.target.textContent='Copiado ✓';setTimeout(()=>event.target.textContent='Copiar todo',1500);});}}
+
+function exportSingleBuffer(capEnc,hashEnc){
+  const full=decodeURIComponent(capEnc)+'\n\n'+decodeURIComponent(hashEnc);
+  navigator.clipboard.writeText(full).then(()=>alert('Contenido copiado.\n\nPasos en Buffer:\n1. Ve a buffer.com\n2. Crea un nuevo post\n3. Pega el texto\n4. Selecciona las redes y programa el horario.'));
+}
+function copyForMeta(capEnc,hashEnc){
+  const full=decodeURIComponent(capEnc)+'\n\n'+decodeURIComponent(hashEnc);
+  navigator.clipboard.writeText(full).then(()=>alert('Contenido copiado.\n\nPasos en Meta Business Suite:\n1. Ve a business.facebook.com\n2. Herramientas de publicación > Crear publicación\n3. Pega el texto\n4. Programa la fecha y hora.'));
+}
+
+// ── IDEAS ──────────────────────────────────────────────
+function fetchIdeasCustom(){const v=document.getElementById('customTopicInput').value.trim();if(!v){alert('Escribe un tema primero.');return;}fetchIdeas(v);}
+
+async function fetchIdeas(topic){
+  const c=document.getElementById('ideasContainer');
+  c.innerHTML=`<div class="loading-row"><div class="spinner"></div>Generando ideas sobre "${topic}"...</div>`;
+  const prompt=`Genera 6 ideas de contenido para redes sociales de Crematorio Alma Animal sobre: "${topic}".
+Para cada idea:
+TIPO: (reel, post, historia o carrusel)
+TITULO: (título llamativo, máx 8 palabras)
+DESCRIPCION: (1-2 oraciones)
+Separa con "---"`;
+  try{
+    const text=await callClaude(prompt);
+    const ideas=text.split('---').filter(i=>i.trim().length>10);
+    if(!ideas.length){c.innerHTML='<p style="font-size:14px;color:var(--text-secondary);">Sin resultados.</p>';return;}
+    let html='<div class="ideas-grid">';
+    ideas.forEach(idea=>{
+      const tipo=(idea.match(/TIPO:\s*(.+)/i)||[])[1]||'post';
+      const titulo=(idea.match(/TITULO:\s*(.+)/i)||[])[1]||'Idea';
+      const desc=(idea.match(/DESCRIPCION:\s*([\s\S]+?)(?=\n[A-Z]|$)/i)||[])[1]||'';
+      html+=`<div class="idea-card" onclick="useIdea('${titulo.trim().replace(/'/g,"\\'")}','${tipo.trim()}')"><div class="idea-type">${tipo.trim()}</div><div class="idea-title">${titulo.trim()}</div><div class="idea-desc">${desc.trim()}</div></div>`;
+    });
+    c.innerHTML=html+'</div>';
+  }catch(e){c.innerHTML='<p style="font-size:14px;color:var(--text-secondary);">Error. Intenta de nuevo.</p>';}
+}
+
+async function webSearchTopic(){
+  const val=document.getElementById('customTopicInput').value.trim();
+  if(!val){alert('Escribe un tema primero.');return;}
+  const c=document.getElementById('ideasContainer');
+  c.innerHTML=`<div class="loading-row"><div class="spinner"></div>Buscando en la web sobre "${val}"...</div>`;
+  const btn=document.querySelector('.web-search-btn');btn.disabled=true;
+  const prompt=`Busca en la web contenido relevante sobre: "${val}", relacionado con mascotas, duelo animal, cremación o vínculo humano-animal.
+Para cada hallazgo:
+HALLAZGO: [título o idea principal]
+FUENTE: [nombre del medio]
+RESUMEN: [2-3 oraciones]
+ANGULO_CONTENIDO: [cómo Alma Animal podría usarlo en redes]
+Separa con "---"`;
+  try{const text=await callClaude(prompt,true);renderWebResults(text,val);}
+  catch(e){c.innerHTML='<p style="font-size:14px;color:var(--text-secondary);">Error al buscar.</p>';}
+  btn.disabled=false;
+}
+
+function renderWebResults(text,query){
+  const c=document.getElementById('ideasContainer');
+  const blocks=text.split('---').filter(b=>b.trim().length>10);
+  if(!blocks.length){c.innerHTML='<p style="font-size:14px;color:var(--text-secondary);">Sin resultados.</p>';return;}
+  let html=`<div class="web-section-label">Hallazgos web sobre "${query}"</div>`;
+  blocks.forEach(block=>{
+    const h=(block.match(/HALLAZGO:\s*(.+)/i)||[])[1]||'';
+    const f=(block.match(/FUENTE:\s*(.+)/i)||[])[1]||'';
+    const r=(block.match(/RESUMEN:\s*([\s\S]+?)(?=\n[A-ZÁÉÍÓÚ_]+:|$)/i)||[])[1]||'';
+    const a=(block.match(/ANGULO_CONTENIDO:\s*([\s\S]+?)(?=\n[A-ZÁÉÍÓÚ_]+:|$)/i)||[])[1]||'';
+    if(!h)return;
+    html+=`<div class="web-result-card"><div class="wrc-source">${f.trim()}</div><div class="wrc-title">${h.trim()}</div><div class="wrc-snippet">${r.trim()}</div>${a?`<div class="wrc-snippet" style="color:var(--text-success);border-top:0.5px solid var(--border-light);padding-top:6px;margin-top:4px;">Ángulo sugerido: ${a.trim()}</div>`:''}<button class="wrc-use-btn" onclick="useWebResult('${h.trim().replace(/'/g,"\\'")}')">Usar como tema →</button></div>`;
+  });
+  html+=`<button class="suggest-btn" style="width:100%;text-align:center;margin-top:8px;" onclick="fetchIdeas('${query.replace(/'/g,"\\'")}')">Generar ideas de contenido →</button>`;
+  c.innerHTML=html;
+}
+function useWebResult(t){document.getElementById('customTopicInput').value=t;fetchIdeas(t);}
+function useIdea(titulo,tipo){
+  document.querySelectorAll('.tab')[0].click();
+  document.getElementById('topicInput').value=titulo;
+  document.querySelectorAll('.format-btn').forEach(b=>{b.classList.remove('selected');if(b.dataset.val&&tipo.toLowerCase().includes(b.dataset.val)){b.classList.add('selected');selectedFormat=b.dataset.val;}});
+}
+
+// ── CALENDAR ───────────────────────────────────────────
+async function generateCalendar(){
+  const c=document.getElementById('calendarContainer');
+  c.innerHTML='<div class="loading-row"><div class="loading-dots"><span></span><span></span><span></span></div><span class="loading-steps">Planificando 2 semanas de contenido...</span></div>';
+  const today=new Date().toLocaleDateString('es-CL',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
+  const prompt=`Crea un plan de contenido de 2 semanas para Crematorio Alma Animal, publicando 2 veces por semana. Fecha de inicio: ${today}.
+Para cada publicación usa fechas reales:
+DIA: (ej: Martes 25 de marzo)
+HORA: (hora óptima Chile)
+PLATAFORMA: (cuál o cuáles)
+FORMATO: (reel, post, historia o estado)
+TEMA: (tema concreto)
+TONO: (empático, informativo, celebratorio o educativo)
+CAPTION_RESUMEN: (resumen de 1 línea del caption)
+Separa con "---"`;
+  try{
+    const text=await callClaude(prompt);
+    calendarData=text.split('---').filter(i=>i.trim().length>10);
+    renderCalendar(calendarData);
+    saveToRepo(calendarData.map((d,i)=>`POST ${i+1}\n`+d).join('\n'),'plan','—');
+  }catch(e){c.innerHTML='<p style="font-size:14px;color:var(--text-secondary);">Error. Intenta de nuevo.</p>';}
+}
+
+function pb(p){const pl=(p||'').toLowerCase();if(pl.includes('instagram'))return'<span class="platform-badge pb-ig">IG</span>';if(pl.includes('tiktok'))return'<span class="platform-badge pb-tt">TT</span>';if(pl.includes('facebook'))return'<span class="platform-badge pb-fb">FB</span>';if(pl.includes('whatsapp'))return'<span class="platform-badge pb-wa">WA</span>';return`<span class="platform-badge pb-ig">${(p||'').slice(0,2).toUpperCase()}</span>`;}
+
+function renderCalendar(items){
+  const c=document.getElementById('calendarContainer');
+  const half=Math.ceil(items.length/2);
+  const rw=(posts,label)=>{
+    let h=`<div class="cal-week"><div class="cal-week-header">${label}</div><div class="cal-posts">`;
+    posts.forEach(p=>{
+      const dia=(p.match(/DIA:\s*(.+)/i)||[])[1]||'';
+      const hora=(p.match(/HORA:\s*(.+)/i)||[])[1]||'';
+      const plat=(p.match(/PLATAFORMA:\s*(.+)/i)||[])[1]||'';
+      const fmt=(p.match(/FORMATO:\s*(.+)/i)||[])[1]||'';
+      const tema=(p.match(/TEMA:\s*(.+)/i)||[])[1]||'';
+      const tono=(p.match(/TONO:\s*(.+)/i)||[])[1]||'';
+      h+=`<div class="cal-post"><span class="cal-day">${dia.trim()}</span><span class="cal-time">${hora.trim()}</span><div class="cal-info"><div class="cal-title">${tema.trim()}</div><div class="cal-meta">${fmt.trim()} · ${tono.trim()} · ${pb(plat)}</div></div></div>`;
+    });
+    return h+'</div></div>';
+  };
+  c.innerHTML=`<div class="calendar-grid">${rw(items.slice(0,half),'Semana 1')}${rw(items.slice(half),'Semana 2')}</div>`;
+}
+
+// ── EXPORT ─────────────────────────────────────────────
+function exportToBuffer(){
+  if(!calendarData.length){alert('Primero genera el plan semanal.');return;}
+  let text='PLAN DE CONTENIDO — CREMATORIO ALMA ANIMAL\nExportar a: buffer.com\n\n';
+  calendarData.forEach((p,i)=>{
+    const dia=(p.match(/DIA:\s*(.+)/i)||[])[1]||'',hora=(p.match(/HORA:\s*(.+)/i)||[])[1]||'';
+    const plat=(p.match(/PLATAFORMA:\s*(.+)/i)||[])[1]||'',fmt=(p.match(/FORMATO:\s*(.+)/i)||[])[1]||'';
+    const tema=(p.match(/TEMA:\s*(.+)/i)||[])[1]||'',cap=(p.match(/CAPTION_RESUMEN:\s*(.+)/i)||[])[1]||tema;
+    text+=`POST ${i+1}\nFecha: ${dia.trim()} a las ${hora.trim()}\nPlataforma: ${plat.trim()} | Formato: ${fmt.trim()}\nTema: ${tema.trim()}\nCaption: ${cap.trim()}\n${'─'.repeat(40)}\n`;
+  });
+  navigator.clipboard.writeText(text).then(()=>alert('Plan copiado.\n\nPasos en Buffer:\n1. buffer.com > crear nuevo post\n2. Pega el caption de cada entrada\n3. Selecciona la red y programa la fecha/hora indicada.'));
+}
+
+function exportToMeta(){
+  if(!calendarData.length){alert('Primero genera el plan semanal.');return;}
+  let text='PLAN PARA META BUSINESS SUITE\nbusiness.facebook.com > Herramientas de publicación\n\n';
+  calendarData.forEach((p,i)=>{
+    const dia=(p.match(/DIA:\s*(.+)/i)||[])[1]||'',hora=(p.match(/HORA:\s*(.+)/i)||[])[1]||'';
+    const plat=(p.match(/PLATAFORMA:\s*(.+)/i)||[])[1]||'',fmt=(p.match(/FORMATO:\s*(.+)/i)||[])[1]||'';
+    const tema=(p.match(/TEMA:\s*(.+)/i)||[])[1]||'',cap=(p.match(/CAPTION_RESUMEN:\s*(.+)/i)||[])[1]||tema;
+    text+=`PUBLICACIÓN ${i+1} — ${dia.trim()} ${hora.trim()}\nRed: ${plat.trim()} | Formato: ${fmt.trim()}\nTema: ${tema.trim()}\nTexto: ${cap.trim()}\n\n`;
+  });
+  navigator.clipboard.writeText(text).then(()=>alert('Plan copiado.\n\nPasos en Meta Business Suite:\n1. business.facebook.com\n2. Herramientas de publicación > Crear publicación\n3. Pega el texto de cada entrada y programa.'));
+}
+
+// ── PDF PLAN ───────────────────────────────────────────
+async function printPlanPDF(){
+  if(!calendarData.length){alert('Primero genera el plan semanal.');return;}
+  const today=new Date().toLocaleDateString('es-CL',{year:'numeric',month:'long',day:'numeric'});
+  const platColor=p=>{const pl=(p||'').toLowerCase();if(pl.includes('instagram'))return['#fce4ec','#880e4f'];if(pl.includes('tiktok'))return['#e8eaf6','#1a237e'];if(pl.includes('facebook'))return['#e3f2fd','#0d47a1'];return['#e8f5e9','#1b5e20'];};
+  let postsHtml='';
+  calendarData.forEach((p,i)=>{
+    const dia=(p.match(/DIA:\s*(.+)/i)||[])[1]||'',hora=(p.match(/HORA:\s*(.+)/i)||[])[1]||'';
+    const plat=(p.match(/PLATAFORMA:\s*(.+)/i)||[])[1]||'',fmt=(p.match(/FORMATO:\s*(.+)/i)||[])[1]||'';
+    const tema=(p.match(/TEMA:\s*(.+)/i)||[])[1]||'',tono=(p.match(/TONO:\s*(.+)/i)||[])[1]||'';
+    const cap=(p.match(/CAPTION_RESUMEN:\s*(.+)/i)||[])[1]||'—';
+    const week=i<Math.ceil(calendarData.length/2)?'Semana 1':'Semana 2';
+    const[pbg,pco]=platColor(plat);
+    const fmtIcon=fmt.toLowerCase().includes('reel')?'🎬':fmt.toLowerCase().includes('historia')?'📱':'🖼';
+    postsHtml+=`<div style="display:flex;gap:16px;padding:16px;border:1px solid #e0ddd8;border-radius:10px;margin-bottom:12px;background:#fff;page-break-inside:avoid;">
+      <div style="width:76px;flex-shrink:0;background:#f8f7f4;border-radius:8px;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:10px;text-align:center;">
+        <div style="font-size:10px;color:#9e9d99;font-weight:500;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:4px;">${week}</div>
+        <div style="font-size:13px;font-weight:600;color:#1a1a18;line-height:1.3;">${dia.trim().split(' ').slice(0,2).join(' ')}</div>
+        <div style="font-size:12px;color:#6b6a66;margin-top:3px;">${hora.trim()}</div>
+      </div>
+      <div style="flex:1;">
+        <div style="display:flex;gap:6px;align-items:center;margin-bottom:8px;flex-wrap:wrap;">
+          <span style="background:${pbg};color:${pco};font-size:11px;font-weight:600;padding:3px 8px;border-radius:6px;">${plat.trim()}</span>
+          <span style="background:#f5f4f1;color:#6b6a66;font-size:11px;padding:3px 8px;border-radius:6px;">${fmt.trim()}</span>
+          <span style="background:#eaf3de;color:#3b6d11;font-size:11px;padding:3px 8px;border-radius:6px;">${tono.trim()}</span>
+        </div>
+        <div style="font-size:15px;font-weight:600;color:#1a1a18;margin-bottom:5px;">${tema.trim()}</div>
+        <div style="font-size:13px;color:#6b6a66;line-height:1.6;">${cap.trim()}</div>
+      </div>
+      <div style="width:64px;flex-shrink:0;background:#f5f4f1;border-radius:8px;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:8px;">
+        <div style="font-size:22px;">${fmtIcon}</div>
+        <div style="font-size:10px;color:#9e9d99;margin-top:4px;text-align:center;">${fmt.trim()}</div>
+      </div>
+    </div>`;
+  });
+
+  const platStats=['Instagram','TikTok','Facebook','WhatsApp'].map(pl=>{
+    const count=calendarData.filter(d=>(d.match(/PLATAFORMA:\s*(.+)/i)||[])[1]?.toLowerCase().includes(pl.toLowerCase())).length;
+    return`<div style="background:#2e2e2b;border-radius:8px;padding:10px;text-align:center;"><div style="font-size:11px;color:#9e9d99;">${pl}</div><div style="font-size:20px;font-weight:600;margin-top:4px;">${count}</div></div>`;
+  }).join('');
+
+  const printHTML=`<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"><title>Plan Semanal — Alma Animal</title>
+<style>*{box-sizing:border-box;margin:0;padding:0;}body{font-family:Georgia,serif;background:#f5f4f1;color:#1a1a18;}
+@media print{body{background:#fff;}.no-print{display:none;}@page{margin:18mm;}}</style></head>
+<body><div style="max-width:820px;margin:0 auto;padding:2rem;">
+  <div style="background:#1a1a18;color:#f0efe9;border-radius:12px;padding:2rem;margin-bottom:2rem;">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:12px;">
+      <div>
+        <div style="font-size:11px;letter-spacing:0.1em;text-transform:uppercase;color:#9e9d99;margin-bottom:6px;">Informe de gestión de contenido</div>
+        <h1 style="font-size:26px;font-weight:400;letter-spacing:-0.5px;">Plan de Contenido</h1>
+        <p style="font-size:16px;color:#a09f9b;margin-top:4px;">Crematorio Alma Animal</p>
+      </div>
+      <div style="text-align:right;">
+        <div style="font-size:12px;color:#a09f9b;">Generado el</div>
+        <div style="font-size:15px;font-weight:500;">${today}</div>
+        <div style="margin-top:8px;background:#2e2e2b;border-radius:8px;padding:8px 14px;">
+          <div style="font-size:11px;color:#9e9d99;">Total publicaciones</div>
+          <div style="font-size:24px;font-weight:600;">${calendarData.length}</div>
+        </div>
+      </div>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:1.5rem;">${platStats}</div>
+  </div>
+  <h2 style="font-size:13px;font-weight:500;color:#6b6a66;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:1rem;">Detalle de publicaciones</h2>
+  ${postsHtml}
+  <div style="background:#fff;border:1px solid #e0ddd8;border-radius:12px;padding:1.5rem;margin:1.5rem 0;">
+    <h2 style="font-size:13px;font-weight:500;color:#6b6a66;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:1rem;">Horarios óptimos · Chile</h2>
+    <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:12px;">
+      <div style="background:#fce4ec;border-radius:8px;padding:12px;"><div style="font-size:13px;font-weight:600;color:#880e4f;margin-bottom:4px;">Instagram</div><div style="font-size:12px;color:#6b6a66;">Mar–Jue: 19:00–21:00 · Sáb: 10:00–12:00</div></div>
+      <div style="background:#e8eaf6;border-radius:8px;padding:12px;"><div style="font-size:13px;font-weight:600;color:#1a237e;margin-bottom:4px;">TikTok</div><div style="font-size:12px;color:#6b6a66;">Lun–Vie: 18:00–20:00 · Dom: 09:00–11:00</div></div>
+      <div style="background:#e3f2fd;border-radius:8px;padding:12px;"><div style="font-size:13px;font-weight:600;color:#0d47a1;margin-bottom:4px;">Facebook</div><div style="font-size:12px;color:#6b6a66;">Mar–Jue: 13:00–15:00 · Vie: 18:00–20:00</div></div>
+      <div style="background:#e8f5e9;border-radius:8px;padding:12px;"><div style="font-size:13px;font-weight:600;color:#1b5e20;margin-bottom:4px;">WhatsApp</div><div style="font-size:12px;color:#6b6a66;">Lun–Vie: 08:00–09:00 · Dom: 11:00–12:00</div></div>
+    </div>
+  </div>
+  <div style="text-align:center;padding-top:1rem;border-top:1px solid #e0ddd8;">
+    <p style="font-size:12px;color:#9e9d99;">Crematorio Alma Animal · Generado con el Agente de Contenido</p>
+  </div>
+  <div class="no-print" style="text-align:center;margin-top:1.5rem;">
+    <button onclick="window.print()" style="padding:12px 32px;background:#1a1a18;color:#fff;border:none;border-radius:8px;font-size:14px;font-weight:500;cursor:pointer;">Imprimir / Guardar como PDF</button>
+  </div>
+</div></body></html>`;
+  const w=window.open('','_blank');w.document.write(printHTML);w.document.close();setTimeout(()=>w.focus(),300);
+}
+
+// ── NEWSLETTER ─────────────────────────────────────────
+async function generateNewsletter(){
+  const topic=document.getElementById('nlTopic').value.trim();
+  if(!topic){alert('Escribe un tema para el newsletter.');return;}
+  const c=document.getElementById('nlContainer');
+  c.innerHTML='<div class="card"><div class="loading-row"><div class="loading-dots"><span></span><span></span><span></span></div><span class="loading-steps">Redactando newsletter...</span></div></div>';
+  const today=new Date().toLocaleDateString('es-CL',{year:'numeric',month:'long',day:'numeric'});
+  const prompt=`Genera un newsletter conciso para Crematorio Alma Animal.
+Estructura: ${selectedNlStruct} | Tema: ${topic} | Destinatario: ${selectedDest} | Fecha: ${today}
+Sé breve y directo. Primero el texto plano del newsletter.
+Luego escribe exactamente "===HTML===" en una línea.
+Luego el HTML completo con estilos inline, fondo beige/tierra, tipografía serif, header "Crematorio Alma Animal", secciones definidas, footer con contacto@almaanimal.cl.`;
+  try{
+    const text=await callClaude(prompt);
+    const parts=text.split('===HTML===');
+    currentNlText=parts[0].trim();
+    currentNlHTML=parts[1]?parts[1].trim():buildFallbackNl(currentNlText,topic,today);
+    renderNewsletter(topic);
+    saveToRepo(currentNlText,'newsletter','—');
+  }catch(e){c.innerHTML='<div class="card"><p style="color:var(--text-danger);font-size:14px;">Error. Intenta de nuevo.</p></div>';}
+}
+
+function buildFallbackNl(text,topic,date){
+  return`<div style="font-family:Georgia,serif;max-width:600px;margin:0 auto;background:#fff;"><div style="background:#2d2820;padding:32px;text-align:center;"><h1 style="color:#f5f0e8;font-size:22px;font-weight:400;margin:0;">Crematorio Alma Animal</h1><p style="color:#a09080;font-size:13px;margin:6px 0 0;">Newsletter · ${date}</p></div><div style="padding:32px;"><h2 style="color:#2d2820;font-size:18px;border-bottom:1px solid #e8e4de;padding-bottom:12px;margin-bottom:20px;">${topic}</h2><div style="font-size:14px;line-height:1.8;color:#4a4540;white-space:pre-wrap;">${text}</div></div><div style="background:#f5f0e8;padding:20px;text-align:center;font-size:12px;color:#9e9d99;">Crematorio Alma Animal · contacto@almaanimal.cl</div></div>`;
+}
+
+function renderNewsletter(topic){
+  const c=document.getElementById('nlContainer');
+  const safeHtml=currentNlHTML.replace(/"/g,'&quot;');
+  c.innerHTML=`<div class="card">
+    <div class="result-header">
+      <span class="result-tag">Newsletter · ${selectedNlStruct} · ${selectedDest}</span>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;">
+        <button class="copy-btn" onclick="copyNlText()">Copiar texto</button>
+        <button class="copy-btn" onclick="copyNlHTML()">Copiar HTML</button>
+        <button class="action-btn info" onclick="toggleNlPreview()">Ver render →</button>
+        <button class="action-btn primary" onclick="printNlPDF()">Guardar PDF →</button>
+      </div>
+    </div>
+    <div class="nl-preview">
+      <div class="nl-preview-header"><span>Vista previa de texto</span></div>
+      <iframe id="nlPreviewFrame" style="display:none;width:100%;height:500px;border:none;" srcdoc="${safeHtml}"></iframe>
+      <div class="nl-preview-body">${currentNlText.replace(/\n/g,'<br>')}</div>
+    </div>
+    <div class="export-row">
+      <button class="action-btn success" onclick="prepareVetSend()">Enviar a veterinarios →</button>
+    </div>
+  </div>`;
+}
+
+function copyNlText(){navigator.clipboard.writeText(currentNlText).then(()=>alert('Texto copiado.'));}
+function copyNlHTML(){navigator.clipboard.writeText(currentNlHTML).then(()=>alert('HTML copiado. Pégalo en Gmail (modo HTML), Mailchimp u otro cliente de email.'));}
+function toggleNlPreview(){const f=document.getElementById('nlPreviewFrame');if(f){f.style.display=f.style.display==='none'?'block':'none';}}
+
+function printNlPDF(){
+  const today=new Date().toLocaleDateString('es-CL',{year:'numeric',month:'long',day:'numeric'});
+  const html=`<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"><title>Newsletter — Alma Animal</title>
+<style>body{font-family:Georgia,serif;background:#f5f4f1;}@media print{body{background:#fff;}.no-print{display:none;}@page{margin:15mm;}}</style></head>
+<body><div style="max-width:680px;margin:2rem auto;background:#fff;border-radius:12px;overflow:hidden;box-shadow:0 2px 20px rgba(0,0,0,0.08);">${currentNlHTML}</div>
+<div class="no-print" style="text-align:center;margin-top:1.5rem;"><button onclick="window.print()" style="padding:12px 32px;background:#1a1a18;color:#fff;border:none;border-radius:8px;font-size:14px;cursor:pointer;">Guardar como PDF</button></div>
+</body></html>`;
+  const w=window.open('','_blank');w.document.write(html);w.document.close();setTimeout(()=>w.focus(),300);
+}
+
+function prepareVetSend(){
+  document.querySelectorAll('.tab')[4].click();
+  setTimeout(()=>{const el=document.getElementById('sendNlCard');if(el){el.style.display='block';el.scrollIntoView({behavior:'smooth'});}},200);
+}
+
+// ── VETERINARIOS ───────────────────────────────────────
+function saveVets(){try{localStorage.setItem('alma_vets',JSON.stringify(vetList));}catch(e){}}
+
+function renderVetTable(){
+  const c=document.getElementById('vetTableContainer');
+  const count=document.getElementById('vetCount');
+  if(!vetList.length){c.innerHTML='<p style="font-size:14px;color:var(--text-secondary);">Sin veterinarios. Importa un CSV o agrega manualmente.</p>';count.textContent='';document.getElementById('sendNlCard').style.display='none';return;}
+  let html=`<table class="vet-table"><thead><tr><th>Nombre</th><th>Email</th><th>Clínica</th><th></th></tr></thead><tbody>`;
+  vetList.forEach((v,i)=>html+=`<tr><td>${v.name||'—'}</td><td>${v.email||'—'}</td><td>${v.clinic||'—'}</td><td><button class="del-btn" onclick="delVet(${i})">Eliminar</button></td></tr>`);
+  c.innerHTML=html+'</tbody></table>';
+  count.textContent=`${vetList.length} veterinario${vetList.length!==1?'s':''} en la base`;
+  document.getElementById('sendNlCard').style.display='block';
+}
+
+function showAddVetForm(){const f=document.getElementById('addVetForm');f.style.display=f.style.display==='none'?'block':'none';}
+
+function addVet(){
+  const name=document.getElementById('vetName').value.trim();
+  const email=document.getElementById('vetEmail').value.trim();
+  const clinic=document.getElementById('vetClinic').value.trim();
+  if(!email){alert('El email es obligatorio.');return;}
+  if(vetList.find(v=>v.email===email)){alert('Este email ya existe en la base.');return;}
+  vetList.push({name,email,clinic});saveVets();
+  document.getElementById('vetName').value='';document.getElementById('vetEmail').value='';document.getElementById('vetClinic').value='';
+  renderVetTable();
+}
+
+function delVet(i){if(confirm('¿Eliminar este veterinario?')){vetList.splice(i,1);saveVets();renderVetTable();}}
+
+function importVetList(e){
+  const file=e.target.files[0];if(!file)return;
+  const reader=new FileReader();
+  reader.onload=ev=>{
+    const text=ev.target.result;
+    const lines=text.split('\n').filter(l=>l.trim());
+    let added=0;
+    lines.forEach((line,i)=>{
+      if(i===0&&line.toLowerCase().includes('email'))return;
+      const parts=line.split(',').map(p=>p.replace(/^["']|["']$/g,'').trim());
+      const email=parts.find(p=>p.includes('@'));
+      if(!email||vetList.find(v=>v.email===email))return;
+      const name=parts[0]&&!parts[0].includes('@')?parts[0]:'';
+      const clinic=parts.length>2?parts[2]:'';
+      vetList.push({name,email,clinic});added++;
+    });
+    saveVets();renderVetTable();
+    alert(`${added} veterinario${added!==1?'s':''} importado${added!==1?'s':''}.`);
+  };
+  reader.readAsText(file);e.target.value='';
+}
+
+async function startSendCampaign(){
+  if(!vetList.length){alert('No hay veterinarios en la base.');return;}
+  if(!currentNlHTML&&!currentNlText){alert('Primero genera un newsletter en la pestaña Newsletter.');return;}
+  const prog=document.getElementById('sendProgressContainer');
+  const total=vetList.length;
+  prog.innerHTML=`<div class="send-progress">
+    <div style="font-size:13px;font-weight:500;margin-bottom:8px;">Enviando a ${total} veterinario${total!==1?'s':''}...</div>
+    <div class="progress-bar-track"><div class="progress-bar-fill" id="progFill" style="width:0%"></div></div>
+    <div style="font-size:12px;color:var(--text-secondary);" id="progLabel">0 / ${total}</div>
+    <div class="send-log" id="sendLog"></div>
+  </div>`;
+  const subject=encodeURIComponent('Newsletter Crematorio Alma Animal');
+  const body=encodeURIComponent(currentNlText||'Te compartimos el newsletter de Alma Animal.');
+  const log=document.getElementById('sendLog'),fill=document.getElementById('progFill'),label=document.getElementById('progLabel');
+  for(let i=0;i<vetList.length;i++){
+    const v=vetList[i];
+    window.open(`https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(v.email)}&su=${subject}&body=${body}`,'_blank');
+    fill.style.width=Math.round(((i+1)/total)*100)+'%';
+    label.textContent=`${i+1} / ${total}`;
+    const row=document.createElement('div');row.className='ok';
+    row.textContent=`✓ Gmail abierto para ${v.name||v.email}`;
+    log.appendChild(row);log.scrollTop=log.scrollHeight;
+    await new Promise(r=>setTimeout(r,2000));
+  }
+  const fin=document.createElement('div');fin.style.fontWeight='500';fin.style.marginTop='6px';
+  fin.textContent=`Campaña completada. ${total} ventanas de Gmail abiertas.`;
+  log.appendChild(fin);
+}
+
+// ── ASSETS ─────────────────────────────────────────────
+function uploadLogo(e){const f=e.target.files[0];if(!f)return;const url=URL.createObjectURL(f);document.getElementById('logoDisplay').innerHTML=`<img src="${url}" style="width:100%;height:100%;object-fit:cover;">`;}
+function uploadBgs(e){Array.from(e.target.files).forEach(f=>{const url=URL.createObjectURL(f);const img=document.createElement('img');img.className='asset-thumb';img.src=url;document.getElementById('assetsGrid').appendChild(img);});document.getElementById('assetsPreview').style.display='block';}
+
+// ── REPOSITORIO ────────────────────────────────────────
+let repoItems=[];
+try{repoItems=JSON.parse(localStorage.getItem('alma_repo')||'[]');}catch(e){repoItems=[];}
+let repoFilter='todos';
+
+const folderMeta={
+  reel:{icon:'🎬',label:'Reels',color:'#e8eaf6',text:'#1a237e'},
+  post:{icon:'🖼',label:'Posts',color:'#e6f1fb',text:'#185fa5'},
+  historia:{icon:'📱',label:'Historias',color:'#eaf3de',text:'#3b6d11'},
+  newsletter:{icon:'📧',label:'Newsletters',color:'#faeeda',text:'#854f0b'},
+  plan:{icon:'📅',label:'Planes semanales',color:'#fce4ec',text:'#880e4f'},
+};
+
+function saveToRepo(text,type,tone){
+  const get=k=>{const m=text.match(new RegExp(k+':[\\s]*([\\s\\S]*?)(?=\\n[A-ZÁÉÍÓÚ_]+:|$)'));return m?m[1].trim():'';};
+  const titulo=get('TÍTULO')||get('TEMA')||text.split('\n')[0].replace(/^[#\-\s]+/,'').slice(0,60)||'Contenido sin título';
+  const item={id:Date.now(),type,tone,titulo,text,date:new Date().toLocaleDateString('es-CL',{day:'numeric',month:'short',year:'numeric'}),time:new Date().toLocaleTimeString('es-CL',{hour:'2-digit',minute:'2-digit'})};
+  repoItems.unshift(item);
+  if(repoItems.length>100)repoItems=repoItems.slice(0,100);
+  try{localStorage.setItem('alma_repo',JSON.stringify(repoItems));}catch(e){}
+}
+
+function filterRepo(f){
+  repoFilter=f;
+  document.querySelectorAll('.repo-filter').forEach(b=>{b.classList.toggle('active',b.textContent.toLowerCase().includes(f==='todos'?'todos':f));});
+  renderRepo();
+}
+
+function renderRepo(){
+  const c=document.getElementById('repoContainer');
+  const items=repoFilter==='todos'?repoItems:repoItems.filter(i=>i.type===repoFilter);
+  if(!items.length){c.innerHTML='<p style="font-size:14px;color:var(--text-secondary);">No hay contenido en esta categoría aún.</p>';return;}
+  const groups={};
+  items.forEach(item=>{
+    const k=item.type;
+    if(!groups[k])groups[k]=[];
+    groups[k].push(item);
+  });
+  const order=['reel','post','historia','newsletter','plan'];
+  let html='';
+  order.forEach(type=>{
+    if(!groups[type])return;
+    const m=folderMeta[type]||{icon:'📄',label:type,color:'#f5f4f1',text:'#6b6a66'};
+    html+=`<div class="repo-folder">
+      <div class="repo-folder-header">
+        <span class="repo-folder-icon">${m.icon}</span>
+        <span class="repo-folder-name">${m.label}</span>
+        <span class="repo-folder-count">${groups[type].length} elemento${groups[type].length!==1?'s':''}</span>
+      </div>
+      <div class="repo-grid">`;
+    groups[type].forEach(item=>{
+      const preview=item.text.replace(/[A-ZÁÉÍÓÚ_]+:\s*/g,'').slice(0,90).replace(/\n/g,' ');
+      html+=`<div class="repo-card" onclick="openRepoItem(${item.id})">
+        <div class="repo-card-type"><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:${m.color};border:1.5px solid ${m.text};"></span>${m.label.slice(0,-1)}</div>
+        <div class="repo-card-title">${item.titulo}</div>
+        <div class="repo-card-meta">${preview}...</div>
+        <div class="repo-card-date">${item.date} · ${item.time}${item.tone&&item.tone!=='—'?' · '+item.tone:''}</div>
+      </div>`;
+    });
+    html+='</div></div>';
+  });
+  c.innerHTML=html;
+}
+
+function openRepoItem(id){
+  const item=repoItems.find(i=>i.id===id);
+  if(!item)return;
+  const m=folderMeta[item.type]||{icon:'📄',label:item.type};
+  const overlay=document.createElement('div');
+  overlay.className='repo-modal-overlay';
+  overlay.onclick=e=>{if(e.target===overlay)overlay.remove();};
+  overlay.innerHTML=`<div class="repo-modal">
+    <button class="repo-modal-close" onclick="this.closest('.repo-modal-overlay').remove()">✕</button>
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:1rem;">
+      <span style="font-size:20px;">${m.icon}</span>
+      <div><div style="font-size:15px;font-weight:500;">${item.titulo}</div><div style="font-size:12px;color:var(--text-tertiary);">${item.date} · ${item.time}</div></div>
+    </div>
+    <div style="font-size:13px;line-height:1.8;color:var(--text-primary);white-space:pre-wrap;background:var(--bg-secondary);border-radius:var(--radius-md);padding:1rem;max-height:400px;overflow-y:auto;">${item.text}</div>
+    <div style="display:flex;gap:8px;margin-top:1rem;flex-wrap:wrap;">
+      <button class="action-btn primary" onclick="navigator.clipboard.writeText('${item.text.replace(/'/g,"\\'")}').then(()=>alert('Copiado.'))">Copiar contenido</button>
+      <button class="action-btn" style="color:var(--text-danger);" onclick="deleteRepoItem(${id});this.closest('.repo-modal-overlay').remove();">Eliminar</button>
+    </div>
+  </div>`;
+  document.body.appendChild(overlay);
+}
+
+function deleteRepoItem(id){repoItems=repoItems.filter(i=>i.id!==id);try{localStorage.setItem('alma_repo',JSON.stringify(repoItems));}catch(e){}renderRepo();}
+function clearRepo(){if(confirm('¿Eliminar todo el contenido del repositorio?')){repoItems=[];try{localStorage.removeItem('alma_repo');}catch(e){}renderRepo();}}
+
+// ── INIT ───────────────────────────────────────────────
+renderVetTable();
+</script>
+</body>
+</html>
