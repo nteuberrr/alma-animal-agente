@@ -390,7 +390,7 @@ async function callClaude(prompt,useSearch=false){
     system:'Eres el agente de contenido de "Crematorio Alma Animal", crematorio de mascotas en Chile. Generas contenido auténtico, empático y profesional. Responde siempre en español.',
     messages:[{role:'user',content:prompt}]};
   if(useSearch)body.tools=[{type:'web_search_20250305',name:'web_search'}];
-  const res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json','x-api-key':'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','anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},body:JSON.stringify(body)});
+  const res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json','x-api-key':'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','anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},body:JSON.stringify(body)});
   const data=await res.json();
   return data.content.map(c=>c.text||'').join('');
 }
